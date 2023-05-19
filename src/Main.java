@@ -112,6 +112,7 @@ public class Main {
         try (FileWriter writer = new FileWriter(filePath)) {
             for (int j = 0; j < terrain.length; j++) {
                 for (int i = 0; i < terrain.length; i++) {
+                    //write vertices
                     int x = i;//left to right
                     int y = -j;//back to forward, minus to fit the programme
                     float z = terrain[i][j];//height
@@ -120,20 +121,75 @@ public class Main {
             }
             for (int j = 0; j < terrain.length-1; j++) {
                 for (int i = 0; i < terrain.length-1; i++) {
+                    //write triangles
                     //counterclockwise
                     int a = j*terrain.length+i+1;//plus 1 to fit the programme
                     int b = j*terrain.length+i+2;
                     int c = (j+1)*terrain.length+i+1;
-                    writer.write("f " + a + " " + c + " " + b +"\n");
+                    writer.write(
+                            "f " + a + "/" + a + "/" + a +
+                                    " " + c + "/" + c + "/" + c +
+                                    " " + b + "/" + b + "/" + b + "\n");
                     //counterclockwise
                     a = (j+1)*terrain.length+i+1;
                     b = j*terrain.length+i+2;
                     c = a+1;
-                    writer.write("f " + a +" " + c + " " + b + "\n");
+                    writer.write(
+                            "f " + a + "/" + a + "/" + a +
+                                    " " + c + "/" + c + "/" + c +
+                                    " " + b + "/" + b + "/" + b + "\n");
+                }
+
+            }
+            for (int j = 0; j < terrain.length; j++) {
+                for (int i = 0; i < terrain.length; i++) {
+                    Normal normal = generateNormalsViaNeighbors(terrain, i, j);
+                    normal.normalize();
+                    writer.write("vn " + normal.x + " " + normal.y + " " + normal.z + "\n");
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static Normal generateNormalsViaNeighbors(float[][] terrain, int x, int y) {
+        float x1;
+        float y1;
+        if (x-1 >= 0 && x+1 < terrain.length) {
+            x1 = (terrain[x+1][y]-terrain[x-1][y])/2;
+        } else if (x-1 >= 0) {
+            x1 = terrain[x][y]-terrain[x-1][y];
+        } else {
+            x1 = terrain[x+1][y]-terrain[x][y];
+        }
+        if (y-1 >= 0 && y+1 < terrain.length) {
+            y1 = (terrain[x][y-1]-terrain[x][y+1])/2;//minus to fit the program
+        } else if (y-1 >= 0) {
+            y1 = terrain[x][y-1]-terrain[x][y];
+        } else {
+            y1 = terrain[x][y]-terrain[x][y+1];
+        }
+        Normal normal = new Normal(x1, y1);
+        normal.normalize();
+        return normal;
+    }
+
+    private static class Normal {
+        float x;
+        float y;
+        float z = 1;
+
+        public Normal(float x, float y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        void normalize() {
+            float lens = (float) Math.sqrt(x*x+y*y+1);
+            x/=lens;
+            y/=lens;
+            z/=lens;
         }
     }
 }
