@@ -135,6 +135,7 @@ public class Main {
                     b = j*terrain.length+i+2;
                     c = a+1;
                     writer.write(
+                            //the first is vertices, the second is texture, the third is normals
                             "f " + a + "/" + a + "/" + a +
                                     " " + c + "/" + c + "/" + c +
                                     " " + b + "/" + b + "/" + b + "\n");
